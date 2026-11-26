@@ -48,10 +48,13 @@ const rps = {
   }
 };
 
-/* ---------------- Damas (regras inglesas, captura obrigatória) ----------------
+/* ---------------- Damas (regras brasileiras, captura obrigatória) ----------------
  * color 1 = brancas (X), começam em baixo e sobem; color 2 = pretas (O), descem.
- * Peões movem/capturam só para a frente; damas (♛) em todas as diagonais.
+ * Peão: anda uma casa só para a frente, mas CAPTURA para a frente e para trás.
+ * Dama (♛): "voa" — anda várias casas em qualquer diagonal e captura à distância,
+ *           podendo aterrar em qualquer casa livre logo a seguir à peça capturada.
  * Captura obrigatória; capturas múltiplas com a mesma peça (mustContinue).
+ * Um peão que chega ao fim a meio de uma captura vira dama e continua a capturar como dama.
  */
 const inB = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
 const checkers = {
@@ -64,28 +67,39 @@ const checkers = {
     }
     return { type: 'checkers', board, turn: 1, winner: null, mustContinue: null, quiet: 0 };
   },
-  dirs(p) {
+  DIAGONALS: [[-1, -1], [-1, 1], [1, -1], [1, 1]],
+  stepDirs(p) {                                                  // direções em que PODE ANDAR
     const fwd = p.color === 1 ? -1 : 1;
-    return p.king ? [[fwd, -1], [fwd, 1], [-fwd, -1], [-fwd, 1]] : [[fwd, -1], [fwd, 1]];
+    return p.king ? checkers.DIAGONALS : [[fwd, -1], [fwd, 1]];
   },
-  capturesFor(g, r, c) {
+  capturesFor(g, r, c) {                                         // capturas: peão 4 direções (1 casa); dama à distância
     const p = g.board[r][c], out = [];
     if (!p) return out;
-    for (const [dr, dc] of checkers.dirs(p)) {
-      const mr = r + dr, mc = c + dc, lr = r + 2 * dr, lc = c + 2 * dc;
-      if (!inB(lr, lc)) continue;
+    for (const [dr, dc] of checkers.DIAGONALS) {
+      let mr = r + dr, mc = c + dc;
+      if (p.king) while (inB(mr, mc) && !g.board[mr][mc]) { mr += dr; mc += dc; }   // desliza até à 1.ª peça
+      if (!inB(mr, mc)) continue;
       const mid = g.board[mr][mc];
-      if (mid && mid.color !== p.color && !g.board[lr][lc])
+      if (!mid || mid.color === p.color) continue;
+      let lr = mr + dr, lc = mc + dc;
+      while (inB(lr, lc) && !g.board[lr][lc]) {
         out.push({ from: { r, c }, to: { r: lr, c: lc }, capture: { r: mr, c: mc } });
+        if (!p.king) break;                                      // peão aterra só logo a seguir
+        lr += dr; lc += dc;                                      // dama pode aterrar em qualquer casa livre seguinte
+      }
     }
     return out;
   },
   stepsFor(g, r, c) {
     const p = g.board[r][c], out = [];
     if (!p) return out;
-    for (const [dr, dc] of checkers.dirs(p)) {
-      const nr = r + dr, nc = c + dc;
-      if (inB(nr, nc) && !g.board[nr][nc]) out.push({ from: { r, c }, to: { r: nr, c: nc } });
+    for (const [dr, dc] of checkers.stepDirs(p)) {
+      let nr = r + dr, nc = c + dc;
+      while (inB(nr, nc) && !g.board[nr][nc]) {
+        out.push({ from: { r, c }, to: { r: nr, c: nc } });
+        if (!p.king) break;                                      // peão: só uma casa
+        nr += dr; nc += dc;                                      // dama: várias casas
+      }
     }
     return out;
   },
@@ -117,7 +131,7 @@ const checkers = {
     if (!piece.king && ((color === 1 && mv.to.r === 0) || (color === 2 && mv.to.r === 7))) { piece.king = true; promoted = true; }
     g.quiet = (mv.capture || !piece.king || promoted) ? 0 : g.quiet + 1;
     g.mustContinue = null;
-    if (mv.capture && !promoted && checkers.capturesFor(g, mv.to.r, mv.to.c).length) {
+    if (mv.capture && checkers.capturesFor(g, mv.to.r, mv.to.c).length) {
       g.mustContinue = { r: mv.to.r, c: mv.to.c };               // continua a saltar
     } else {
       g.turn = color === 1 ? 2 : 1;
