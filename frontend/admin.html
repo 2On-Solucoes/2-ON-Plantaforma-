@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2 ON — Painel Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#060d15">
+  <style>
+    :root {
+      --bg: #060d15; --surface: #0f1c2a; --surface2: #162433;
+      --text: #e8f1f8; --muted: #8aa0b3; --accent: #2ee59d; --danger: #ff4d6d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 24px 16px; line-height: 1.5;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 22px; margin-bottom: 6px; }
+    .sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    .card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    }
+    .card h2 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    input, textarea, select {
+      width: 100%; background: var(--surface2); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: var(--text); padding: 11px 13px; font-size: 14px;
+      font-family: inherit; margin-bottom: 12px;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 140px; }
+    .btn {
+      border: none; border-radius: 10px; padding: 12px 18px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: opacity .15s;
+    }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #060d15; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,.12); }
+    .btn-danger { background: var(--danger); color: white; }
+    .suggestion {
+      background: var(--surface2); border-radius: 12px; padding: 14px; margin-bottom: 10px;
+      border-left: 3px solid var(--accent);
+    }
+    .suggestion .meta { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .suggestion .text { font-size: 14px; white-space: pre-wrap; }
+    .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+    .login-box { max-width: 360px; margin: 80px auto; }
+    .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
+    .badge { display: inline-block; background: var(--accent); color: #060d15;
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- LOGIN SIMPLES -->
+    <div id="loginView" class="login-box card">
+      <h1>Painel Admin</h1>
+      <p class="sub">Acesso restrito ao criador da 2 ON</p>
+      <label>Palavra-passe</label>
+      <input type="password" id="adminPass" placeholder="Introduz a palavra-passe" autocomplete="current-password">
+      <button class="btn btn-primary" id="loginBtn" style="width:100%">Entrar</button>
+      <p class="status" id="loginStatus"></p>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted)">
+        A palavra-passe é definida no servidor (variável <code>ADMIN_PASSWORD</code>).
+      </p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashView" hidden>
+      <h1>2 ON — Admin</h1>
+      <p class="sub">Gerir atualizações, notificações e sugestões dos utilizadores</p>
+
+      <!-- ATUALIZAÇÃO / VERSÃO -->
+      <div class="card">
+        <h2>🚀 Publicar atualização</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+          Quando mudares estes valores e o backend devolver estes dados no <code>/api/version</code>,
+          a app mostra o ecrã “Nova atualização disponível” aos utilizadores.
+        </p>
+        <div class="row">
+          <div>
+            <label>Versão (ex: 1.1.0)</label>
+            <input id="verVersion" value="1.1.0">
+          </div>
+          <div>
+            <label>Version Code (número inteiro)</label>
+            <input id="verCode" type="number" value="2">
+          </div>
+        </div>
+        <label>Título do aviso</label>
+        <input id="verTitle" value="Nova versão disponível">
+        <label>Mensagem</label>
+        <textarea id="verMessage">Corrigimos bugs e melhorámos a experiência. Atualiza agora para a melhor versão.</textarea>
+        <label>Link de download (Play Store ou APK)</label>
+        <input id="verUrl" value="https://play.google.com/store/apps/details?id=com.twoon.platform">
+        <label>Changelog (uma linha por item)</label>
+        <textarea id="verChangelog">Melhorias no Streaming
+Novo sistema de sugestões
+Correções de estabilidade</textarea>
+        <div class="row" style="align-items:center;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;margin:0">
+            <input type="checkbox" id="verForce" style="width:auto;margin:0"> Forçar atualização (obrigatória)
+          </label>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btnSaveVersion">Guardar versão</button>
+          <button class="btn btn-ghost" id="btnPreviewUpdate">Pré-visualizar ecrã</button>
+        </div>
+        <p class="status" id="versionStatus"></p>
+      </div>
+
+      <!-- ENVIAR NOTIFICAÇÃO -->
+      <div class="card">
+        <h2>🔔 Enviar notificação</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">
+          Envia uma notificação push / in-app para os utilizadores. (Requer Firebase ou OneSignal configurado no backend)
+        </p>
+        <label>Título</label>
+        <input id="notifTitle" placeholder="Ex: Nova atualização da 2 ON">
+        <label>Mensagem</label>
+        <textarea id="notifBody" placeholder="Ex: Já podes atualizar a app. Temos novidades!"></textarea>
+        <button class="btn btn-primary" id="btnSendNotif">Enviar notificação</button>
+        <p class="status" id="notifStatus"></p>
+      </div>
+
+      <!-- SUGESTÕES -->
+      <div class="card">
+        <h2>💡 Sugestões dos utilizadores <span class="badge" id="sugCount">0</span></h2>
+        <div id="suggestionsList">
+          <div class="empty">A carregar sugestões…</div>
+        </div>
+        <button class="btn btn-ghost" id="btnRefreshSug" style="margin-top:10px">Atualizar lista</button>
+      </div>
+
+      <button class="btn btn-ghost" id="logoutBtn" style="margin-top:10px">Sair</button>
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIG ==========
+    // A palavra-passe é validada no servidor (variável de ambiente ADMIN_PASSWORD).
+    const API_VERSION = '/api/admin/version';
+    const API_NOTIFY = '/api/admin/notify';
+    const API_SUGGESTIONS = '/api/admin/suggestions';
+
+    // ========== AUTH ==========
+    const loginView = document.getElementById('loginView');
+    const dashView = document.getElementById('dashView');
+    const tokenKey = '2on_admin_session';
+
+    let adminToken = '';
+    try { adminToken = sessionStorage.getItem(tokenKey) || ''; } catch {}
+    function isLogged() { return !!adminToken; }
+    function authHeaders(extra) {
+      return Object.assign({ 'Authorization': 'Bearer ' + adminToken }, extra || {});
+    }
+    async function logout() {
+      try { await fetch('/api/admin/logout', { method: 'POST', headers: authHeaders() }); } catch {}
+      try { sessionStorage.removeItem(tokenKey); } catch {}
+      adminToken = '';
+      location.reload();
+    }
+
+    function showDash() {
+      loginView.hidden = true;
+      dashView.hidden = false;
+      loadSuggestions();
+    }
+
+    document.getElementById('loginBtn').onclick = async () => {
+      const pass = document.getElementById('adminPass').value;
+      const st = document.getElementById('loginStatus');
+      if (!pass) { st.textContent = 'Escreve a palavra-passe.'; return; }
+      st.textContent = 'A verificar…';
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass })
+        });
+        if (res.status === 401) { st.textContent = 'Palavra-passe incorreta.'; return; }
+        if (res.status === 429) { st.textContent = 'Demasiadas tentativas. Aguarda um minuto.'; return; }
+        if (res.status === 401) return logout();
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        if (!data.token) throw new Error('fail');
+        adminToken = data.token;
+        document.getElementById('adminPass').value = '';
+        try { sessionStorage.setItem(tokenKey, adminToken); } catch {}
+        st.textContent = '';
+        showDash();
+      } catch (e) {
+        st.textContent = 'Servidor indisponível. Verifica se o backend está a correr.';
+      }
+    };
+
+    document.getElementById('adminPass').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+
+    document.getElementById('logoutBtn').onclick = logout;
+
+    if (isLogged()) showDash();
+
+    // ========== VERSÃO ==========
+    document.getElementById('btnSaveVersion').onclick = async () => {
+      const payload = {
+        version: document.getElementById('verVersion').value.trim(),
+        versionCode: parseInt(document.getElementById('verCode').value, 10) || 1,
+        force: document.getElementById('verForce').checked,
+        title: document.getElementById('verTitle').value.trim(),
+        message: document.getElementById('verMessage').value.trim(),
+        downloadUrl: document.getElementById('verUrl').value.trim(),
+        changelog: document.getElementById('verChangelog').value.split('\n').map(s => s.trim()).filter(Boolean)
+      };
+
+      const status = document.getElementById('versionStatus');
+      status.textContent = 'A guardar…';
+
+      try {
+        const res = await fetch(API_VERSION, {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(payload)
+        });
+        if (res.status === 401) return logout();
+        if (!res.ok) throw new Error('fail');
+        status.textContent = '✅ Versão guardada. Os utilizadores verão o aviso na próxima abertura da app.';
+      } catch (e) {
+        // Fallback: guarda localmente para teste
+        try { localStorage.setItem('2on_mock_version', JSON.stringify(payload)); } catch {}
+        status.textContent = '⚠️ Backend não disponível. Versão guardada localmente para testes (mock).';
+      }
+    };
+
+    document.getElementById('btnPreviewUpdate').onclick = () => {
+      const info = {
+        version: document.getElementById('verVersion').value.trim(),
+        force: document.getElementById('verForce').checked,
+        title: document.getElementById('verTitle').value.trim(),
+        message: document.getElementById('verMessage').value.trim(),
+        downloadUrl: document.getElementById('verUrl').value.trim(),
+        changelog: document.getElementById('verChangelog').value.split('\n').map(s => s.trim()).filter(Boolean)
+      };
+      // Usa o mesmo modal do app-core se estiver carregado, senão cria um simples
+      if (window.ONCore?.showUpdateModal) {
+        window.ONCore.showUpdateModal(info);
+      } else {
+        alert('Pré-visualização:\n\n' + info.title + '\n' + info.message + '\n\nVersão: ' + info.version);
+      }
+    };
+
+    // ========== NOTIFICAÇÃO ==========
+    document.getElementById('btnSendNotif').onclick = async () => {
+      const title = document.getElementById('notifTitle').value.trim();
+      const body = document.getElementById('notifBody').value.trim();
+      const status = document.getElementById('notifStatus');
+
+      if (!title || !body) {
+        status.textContent = 'Preenche título e mensagem.';
+        return;
+      }
+
+      status.textContent = 'A enviar…';
+      try {
+        const res = await fetch(API_NOTIFY, {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ title, body })
+        });
+        if (res.status === 401) return logout();
+        if (!res.ok) throw new Error('fail');
+        status.textContent = '✅ Notificação enviada.';
+        document.getElementById('notifTitle').value = '';
+        document.getElementById('notifBody').value = '';
+      } catch (e) {
+        status.textContent = '⚠️ Backend de notificações ainda não configurado (Firebase/OneSignal).';
+      }
+    };
+
+    // ========== SUGESTÕES ==========
+    async function loadSuggestions() {
+      const list = document.getElementById('suggestionsList');
+      const count = document.getElementById('sugCount');
+
+      try {
+        const res = await fetch(API_SUGGESTIONS, {
+          headers: authHeaders()
+        });
+        if (res.status === 401) return logout();
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        const items = data.suggestions || data || [];
+        count.textContent = items.length;
+
+        if (!items.length) {
+          list.innerHTML = '<div class="empty">Ainda não há sugestões.</div>';
+          return;
+        }
+
+        list.innerHTML = items.map(s => `
+          <div class="suggestion" data-id="${escape(s.id)}" style="${s.read ? 'opacity:.6' : ''}">
+            <div class="meta">
+              ${s.name ? escape(s.name) : 'Anónimo'}
+              ${s.contact ? ' · ' + escape(s.contact) : ''}
+              ${s.createdAt ? ' · ' + escape(new Date(s.createdAt).toLocaleString('pt')) : ''}
+              ${s.read ? ' · lida' : ''}
+            </div>
+            <div class="text">${escape(s.text)}</div>
+            <div style="margin-top:8px;display:flex;gap:8px">
+              ${s.read ? '' : '<button class="btn btn-ghost" data-act="read" style="padding:6px 12px;font-size:12px">Marcar como lida</button>'}
+              <button class="btn btn-danger" data-act="delete" style="padding:6px 12px;font-size:12px">Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+        list.querySelectorAll('[data-act]').forEach(btn => {
+          btn.onclick = async () => {
+            const id = btn.closest('.suggestion').dataset.id;
+            const act = btn.dataset.act;
+            if (act === 'delete' && !confirm('Eliminar esta sugestão de forma permanente?')) return;
+            try {
+              const r = await fetch(API_SUGGESTIONS + '/' + encodeURIComponent(id) + '/' + act, { method: 'POST', headers: authHeaders() });
+              if (r.status === 401) return logout();
+            } catch {}
+            loadSuggestions();
+          };
+        });
+      } catch (e) {
+        // Fallback: mostra sugestões pendentes do localStorage (útil em testes)
+        let pending = [];
+        try { pending = JSON.parse(localStorage.getItem('2on_pending_suggestions') || '[]'); } catch {}
+        count.textContent = pending.length;
+        if (!pending.length) {
+          list.innerHTML = '<div class="empty">Backend offline. Nenhuma sugestão local encontrada.</div>';
+          return;
+        }
+        list.innerHTML = pending.map(s => `
+          <div class="suggestion">
+            <div class="meta">${escape(s.name || 'Anónimo')} ${s.contact ? '· ' + escape(s.contact) : ''} · ${escape(new Date(s.at).toLocaleString('pt'))}</div>
+            <div class="text">${escape(s.text)}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    document.getElementById('btnRefreshSug').onclick = loadSuggestions;
+
+    function escape(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\'/g,'&#39;');
+    }
+  </script>
+</body>
+</html>

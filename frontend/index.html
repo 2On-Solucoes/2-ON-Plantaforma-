@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>2-ON Plataforma · Streaming e Games em tempo real</title>
+  <meta name="description" content="2-ON Plataforma: assiste a vídeos em conjunto no Streaming e joga X Vs O, Damas e Pedra-Papel-Tesoura em tempo real no 2-ON GAMES, com salas por código, chat e voz.">
+  <meta name="theme-color" content="#060d15">
+  <meta name="color-scheme" content="dark">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="2-ON Plataforma · Streaming e Games em tempo real">
+  <meta property="og:description" content="Assiste a vídeos em conjunto e joga partidas multiplayer, em telefones diferentes, sem instalar nada.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="2 ON">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Marca a página como "com JavaScript" antes da primeira pintura: sem JS, todo o conteúdo fica visível -->
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="home.css">
+  <script src="home.js" defer></script>
+  <script src="app-core.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#areas">Saltar para as áreas</a>
+  <div class="scroll-progress" aria-hidden="true"><span data-scroll-progress></span></div>
+
+  <!-- ============ CABEÇALHO ============ -->
+  <header class="site-header" data-header>
+    <div class="wrap">
+      <div class="site-header__bar">
+        <a class="brand" href="#topo" aria-label="2-ON Plataforma — início">
+          <span class="brand__mark">2·ON</span>
+          <span class="brand__name">Plataforma</span>
+        </a>
+
+        <nav class="nav" id="nav" data-nav aria-label="Principal">
+          <a class="nav__link" href="#areas" data-spy>Áreas</a>
+          <a class="nav__link" href="#como" data-spy>Como funciona</a>
+          <a class="nav__link" href="#funcionalidades" data-spy>Funcionalidades</a>
+          <a class="nav__link" href="#modos" data-spy>Modos</a>
+          <a class="nav__link" href="#contacto" data-spy>Contacto</a>
+        </nav>
+
+        <div class="server-status" id="serverStatus" data-state="checking" role="status" aria-live="polite" title="Estado do servidor">
+          <span class="server-status__dot" aria-hidden="true"></span>
+          <span class="server-status__text" id="serverStatusText">A verificar…</span>
+        </div>
+
+        <a class="btn btn--primary btn--sm site-header__cta" href="#areas">Entrar</a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <span class="nav-toggle__bar"></span><span class="nav-toggle__bar"></span><span class="nav-toggle__bar"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="topo">
+    <!-- ============ HERO ============ -->
+    <section class="hero" data-hero aria-labelledby="hero-title">
+      <div class="hero__bg" aria-hidden="true">
+        <span class="hero__orb hero__orb--blue"></span>
+        <span class="hero__orb hero__orb--green"></span>
+        <span class="hero__grid"></span>
+        <span class="hero__spotlight"></span>
+      </div>
+
+      <div class="wrap hero__content">
+        <span class="badge hero__item" style="--i:0">Streaming · Games · Tempo real</span>
+        <h1 class="hero__title hero__item" id="hero-title" style="--i:1">
+          Assistam juntos. <em>Joguem</em> ao mesmo tempo.
+        </h1>
+        <p class="hero__lede hero__item" style="--i:2">
+          Um único painel para ver vídeos em conjunto e competir em partidas multiplayer,
+          em telefones diferentes, sem instalar nada.
+        </p>
+        <div class="hero__cta hero__item" style="--i:3">
+          <a class="btn btn--blue" href="streaming/"><span aria-hidden="true">▶</span> Entrar no Streaming</a>
+          <a class="btn btn--green" href="games.html"><span aria-hidden="true">✦</span> Entrar nos Games</a>
+        </div>
+
+        <figure class="diagram hero__item" style="--i:4">
+          <svg viewBox="0 -8 640 316" role="img" aria-labelledby="diagram-title diagram-desc">
+            <title id="diagram-title">Como a 2-ON liga tudo</title>
+            <desc id="diagram-desc">O núcleo 2·ON liga o Streaming, o 2-ON GAMES, o chat e voz, o ranking, as salas por código e a sincronização.</desc>
+
+            <g class="diagram__links" fill="none">
+              <path class="diagram__link diagram__link--blue"  d="M150 60H220V120H260"/>
+              <path class="diagram__link diagram__link--green" d="M490 60H420V120H380"/>
+              <path class="diagram__link diagram__link--soft"  d="M150 240H220V180H260"/>
+              <path class="diagram__link diagram__link--green" d="M490 240H420V180H380"/>
+              <path class="diagram__link diagram__link--soft"  d="M320 28V100"/>
+              <path class="diagram__link diagram__link--blue"  d="M320 272V200"/>
+            </g>
+
+            <g class="diagram__core">
+              <rect class="diagram__pulse" x="260" y="100" width="120" height="100" rx="18"/>
+              <rect class="diagram__core-box" x="260" y="100" width="120" height="100" rx="18"/>
+              <text x="320" y="158" text-anchor="middle">2·ON</text>
+            </g>
+
+            <g class="diagram__nodes" text-anchor="middle">
+              <g class="diagram__node diagram__node--blue"  style="--i:0"><rect x="10"  y="32"  width="140" height="56" rx="16"/><text x="80"  y="66">Streaming</text></g>
+              <g class="diagram__node diagram__node--green" style="--i:1"><rect x="490" y="32"  width="140" height="56" rx="16"/><text x="560" y="66">2-ON GAMES</text></g>
+              <g class="diagram__node"                      style="--i:2"><rect x="10"  y="212" width="140" height="56" rx="16"/><text x="80"  y="246">Chat e voz</text></g>
+              <g class="diagram__node diagram__node--green" style="--i:3"><rect x="490" y="212" width="140" height="56" rx="16"/><text x="560" y="246">Ranking</text></g>
+              <g class="diagram__node"                      style="--i:4"><rect x="235" y="-6"  width="170" height="34" rx="17"/><text x="320" y="17">Salas por código</text></g>
+              <g class="diagram__node diagram__node--blue"  style="--i:5"><rect x="235" y="272" width="170" height="34" rx="17"/><text x="320" y="295">Sincronização</text></g>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ ÁREAS ============ -->
+    <section class="section" id="areas" aria-labelledby="areas-title">
+      <div class="wrap">
+        <header class="section__head" data-reveal>
+          <span class="badge">Áreas</span>
+          <h2 class="section__title" id="areas-title">Escolhe como queres <em>usar</em> a 2-ON</h2>
+          <p class="section__lede">Duas áreas, uma só plataforma. Entra na que precisas agora.</p>
+        </header>
+
+        <div class="areas" data-reveal-group>
+          <a class="area-card area-card--blue" href="streaming/" data-reveal data-spotlight aria-label="Entrar no 2 ON Streaming">
+            <span class="area-card__icon" aria-hidden="true">▶</span>
+            <span class="area-card__meta">Área 01 · Experiência social</span>
+            <h3 class="area-card__title">2 ON Streaming</h3>
+            <p class="area-card__text">Cria uma sessão privada e assiste ao mesmo conteúdo com outra pessoa, cada um no seu telefone.</p>
+            <ul class="check-list">
+              <li>Vídeos locais e YouTube</li>
+              <li>Transmissão e sincronização</li>
+              <li>Chat e chamada de voz</li>
+            </ul>
+            <span class="area-card__cta">Entrar no Streaming <b aria-hidden="true">→</b></span>
+          </a>
+
+          <a class="area-card area-card--green" href="games.html" data-reveal data-spotlight aria-label="Entrar no 2-ON GAMES">
+            <span class="area-card__icon" aria-hidden="true">✦</span>
+            <span class="area-card__meta">Área 02 · Competição</span>
+            <h3 class="area-card__title">2-ON GAMES</h3>
+            <p class="area-card__text">Cria uma sala, partilha o código e joga contra outra pessoa em tempo real.</p>
+            <ul class="check-list">
+              <li>X Vs O, Damas e Pedra-Papel-Tesoura</li>
+              <li>Salas por código, espectadores e voz</li>
+              <li>Ranking e perfil de jogador</li>
+            </ul>
+            <span class="area-card__cta">Entrar nos Games <b aria-hidden="true">→</b></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMO FUNCIONA ============ -->
+    <section class="section section--panel" id="como" aria-labelledby="como-title">
+      <div class="wrap">
+        <header class="section__head" data-reveal>
+          <span class="badge">Como funciona</span>
+          <h2 class="section__title" id="como-title">Do clique à <em>diversão</em> em três passos</h2>
+          <p class="section__lede">Sem contas complicadas e sem instalação: abre, escolhe e partilha.</p>
+        </header>
+
+        <ol class="steps" data-reveal-group>
+          <li class="step" data-reveal><span class="step__num">1</span><h3 class="step__title">Escolhe uma área</h3><p class="step__text">Streaming para assistir em conjunto ou 2-ON GAMES para jogar.</p></li>
+          <li class="step" data-reveal><span class="step__num">2</span><h3 class="step__title">Cria ou entra</h3><p class="step__text">Cria uma sessão ou sala, ou usa o código que recebeste de outra pessoa.</p></li>
+          <li class="step" data-reveal><span class="step__num">3</span><h3 class="step__title">Partilha o momento</h3><p class="step__text">Usa a sincronização, o chat, a voz e o multiplayer para viver tudo ao mesmo tempo.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ FUNCIONALIDADES ============ -->
+    <section class="section" id="funcionalidades" aria-labelledby="func-title">
+      <div class="wrap">
+        <header class="section__head" data-reveal>
+          <span class="badge">Funcionalidades</span>
+          <h2 class="section__title" id="func-title">Tudo o que precisas para <em>partilhar</em></h2>
+          <p class="section__lede">Pensado para o telemóvel, com ligação estável e ações rápidas.</p>
+        </header>
+
+        <div class="features" data-reveal-group>
+          <article class="feature-card feature-card--blue" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">⟲</span><h3 class="feature-card__title">Sincronização</h3><p class="feature-card__text">O vídeo avança, pausa e retoma ao mesmo tempo para toda a gente na sessão.</p></article>
+          <article class="feature-card feature-card--blue" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">⌗</span><h3 class="feature-card__title">Salas por código</h3><p class="feature-card__text">Partilha um código curto (ou o QR) e a outra pessoa entra em segundos.</p></article>
+          <article class="feature-card feature-card--blue" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">◎</span><h3 class="feature-card__title">Voz e chat</h3><p class="feature-card__text">Fala durante o vídeo ou a partida e troca mensagens sem sair do ecrã.</p></article>
+          <article class="feature-card feature-card--green" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">♟</span><h3 class="feature-card__title">Três jogos</h3><p class="feature-card__text">X Vs O, Damas com captura obrigatória e Pedra-Papel-Tesoura com revelação simultânea.</p></article>
+          <article class="feature-card feature-card--green" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">↻</span><h3 class="feature-card__title">Reconexão automática</h3><p class="feature-card__text">Se a rede cair, voltas à mesma sala e ao mesmo ponto da partida.</p></article>
+          <article class="feature-card feature-card--green" data-reveal data-spotlight><span class="feature-card__icon" aria-hidden="true">▲</span><h3 class="feature-card__title">Ranking</h3><p class="feature-card__text">Vitórias, derrotas e empates guardados no teu perfil, com tabela dos melhores.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MODOS ============ -->
+    <section class="section section--tight" id="modos" aria-labelledby="modos-title">
+      <div class="wrap">
+        <header class="section__head" data-reveal>
+          <span class="badge">Modos</span>
+          <h2 class="section__title" id="modos-title">Quem cria e quem <em>entra</em></h2>
+        </header>
+
+        <div class="modes" data-reveal-group>
+          <article class="mode-card" data-reveal>
+            <span class="badge badge--blue">Anfitrião</span>
+            <h3 class="mode-card__title">Cria e convida</h3>
+            <ul class="check-list">
+              <li>Escolhe o jogo ou o vídeo</li>
+              <li>Recebe um código (e QR) para partilhar</li>
+              <li>Controla a sessão e inicia a revanche</li>
+            </ul>
+          </article>
+          <article class="mode-card" data-reveal>
+            <span class="badge badge--green">Convidado</span>
+            <h3 class="mode-card__title">Entra e participa</h3>
+            <ul class="check-list">
+              <li>Digita o código ou abre o link recebido</li>
+              <li>Joga, assiste ou acompanha como espectador</li>
+              <li>Fala por voz e conversa no chat</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="chips" data-reveal aria-label="Funciona em">
+          <span class="chips__label">Funciona em</span>
+          <span class="chip">Android</span><span class="chip">iPhone</span><span class="chip">Computador</span><span class="chip">Sem instalar nada</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTO ============ -->
+    <section class="section" id="contacto" aria-labelledby="contacto-title">
+      <div class="wrap">
+        <div class="contact" data-reveal>
+          <span class="badge">Contacto</span>
+          <h2 class="section__title" id="contacto-title">Tens uma <em>ideia</em> ou encontraste um problema?</h2>
+          <p class="contact__lede">Diz-nos o que melhorar. A tua sugestão chega diretamente à equipa 2-ON SOLUÇÕES.</p>
+          <button type="button" class="btn btn--primary" id="openSuggest" data-suggest><span aria-hidden="true">💡</span> Enviar sugestão</button>
+
+          <dl class="contact__info">
+            <div><dt>Estado do servidor</dt><dd id="infoStatus" data-state="checking">A verificar…</dd></div>
+            <div><dt>Versão da plataforma</dt><dd id="infoVersion">—</dd></div>
+            <div><dt>Desenvolvido por</dt><dd>2-ON SOLUÇÕES</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ RODAPÉ ============ -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="site-footer__grid">
+        <div>
+          <a class="brand" href="#topo"><span class="brand__mark">2·ON</span><span class="brand__name">Plataforma</span></a>
+          <p class="site-footer__about">Streaming e jogos multiplayer em tempo real, num único painel.</p>
+        </div>
+        <nav aria-label="Navegação do rodapé">
+          <h2 class="site-footer__heading">Navegação</h2>
+          <a href="#areas">Áreas</a><a href="#como">Como funciona</a><a href="#funcionalidades">Funcionalidades</a><a href="#contacto">Contacto</a>
+        </nav>
+        <nav aria-label="Áreas">
+          <h2 class="site-footer__heading">Áreas</h2>
+          <a href="streaming/">2 ON Streaming</a><a href="games.html">2-ON GAMES</a>
+        </nav>
+      </div>
+      <p class="site-footer__copy">© 2026 2 ON Platform · <strong>2-ON SOLUÇÕES</strong>. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
