@@ -238,27 +238,58 @@ document.addEventListener('DOMContentLoaded', () => {
     return fileKind === 'audio' ? hostAudioEl : hostVideo;
   }
 
-  function addMovieTracksIfNeeded() {
-    if (moviePublished || !pc) return;
+  // captureStream() devolve uma stream VAZIA enquanto o ficheiro ainda não carregou.
+  // Por isso esperamos até o elemento ter faixas antes de as enviar ao convidado.
+  function getMediaElementStream(el, timeoutMs) {
+    return new Promise(resolve => {
+      const stream = el.captureStream ? el.captureStream() : el.mozCaptureStream();
+      let done = false, settle = null;
+      const finish = () => {
+        if (done) return; done = true;
+        clearTimeout(timer); clearTimeout(settle);
+        el.removeEventListener('playing', check);
+        el.removeEventListener('loadeddata', check);
+        if (stream.removeEventListener) stream.removeEventListener('addtrack', check);
+        resolve(stream);
+      };
+      // quando aparece a 1.ª faixa, espera um instante pela outra (vídeo + áudio)
+      const check = () => { if (!done && !settle && stream.getTracks().length) settle = setTimeout(finish, 400); };
+      const timer = setTimeout(finish, timeoutMs || 10000);
+      el.addEventListener('playing', check);
+      el.addEventListener('loadeddata', check);
+      if (stream.addEventListener) stream.addEventListener('addtrack', check);
+      check();
+    });
+  }
+
+  let publishGen = 0;
+  async function publishMovieTracks() {
+    if (!pc || role !== 'host') return;
+    const gen = ++publishGen;                       // se escolheres outro ficheiro entretanto, ignora este
     const el = activeHostMediaEl();
-    const localStream = el.captureStream ? el.captureStream() : el.mozCaptureStream();
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    const stream = await getMediaElementStream(el);
+    if (gen !== publishGen || !pc) return;
+    const tracks = stream.getTracks();
+    if (!tracks.length) return;
+    const micTrack = micStream ? micStream.getAudioTracks()[0] : null;
+    const senders = pc.getSenders();
+    tracks.forEach(track => {
+      const sender = senders.find(s => s.track && s.track.kind === track.kind && s.track !== micTrack && s.track !== track);
+      if (sender) sender.replaceTrack(track);
+      else pc.addTrack(track, stream);
+    });
     moviePublished = true;
     pendingPeer = false;
   }
 
+  function addMovieTracksIfNeeded() {
+    if (moviePublished || !pc) return;
+    publishMovieTracks();
+  }
+
   function publishOrReplaceMovieTrack() {
-    if (pendingPeer) { addMovieTracksIfNeeded(); return; }
-    if (moviePublished && pc) {
-      const el = activeHostMediaEl();
-      const newStream = el.captureStream ? el.captureStream() : el.mozCaptureStream();
-      const senders = pc.getSenders();
-      newStream.getTracks().forEach(track => {
-        const sender = senders.find(s => s.track && s.track.kind === track.kind && s.track !== track);
-        if (sender) sender.replaceTrack(track);
-        else pc.addTrack(track, newStream);
-      });
-    }
+    if (!pc) { pendingPeer = true; return; }        // ainda não há ligação: publica quando o convidado entrar
+    publishMovieTracks();
   }
 
   function broadcastFileState() {
@@ -585,8 +616,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnUnmute = document.getElementById('btn-unmute');
   const remoteAudio = document.getElementById('remote-audio');
   const btnAudioUnmute = document.getElementById('btn-audio-unmute');
-  viewerVideo.addEventListener('play',()=>{ if (role==='viewer' && viewerControlGranted && !transferApplyingRemote) socketSend({type:'control',action: currentMode==='file' ? 'media-play' : 'transfer-play',time:viewerVideo.currentTime}); setViewerPlaybackButton(); });
-  viewerVideo.addEventListener('pause',()=>{ if (role==='viewer' && viewerControlGranted && !transferApplyingRemote) socketSend({type:'control',action: currentMode==='file' ? 'media-pause' : 'transfer-pause',time:viewerVideo.currentTime}); setViewerPlaybackButton(); });
+  viewerVideo.addEventListener('play',()=>{ if (role==='viewer' && viewerControlGranted && !transferApplyingRemote && userInitiated()) socketSend({type:'control',action: currentMode==='file' ? 'media-play' : 'transfer-play',time:viewerVideo.currentTime}); setViewerPlaybackButton(); });
+  viewerVideo.addEventListener('pause',()=>{ if (role==='viewer' && viewerControlGranted && !transferApplyingRemote && userInitiated()) socketSend({type:'control',action: currentMode==='file' ? 'media-pause' : 'transfer-pause',time:viewerVideo.currentTime}); setViewerPlaybackButton(); });
 
 
   function updateViewerNowPlaying(text) {
@@ -1063,14 +1094,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return transferKind === 'audio' ? document.getElementById('transfer-viewer-audio') : document.getElementById('transfer-viewer-video');
   }
 
+  // Só enviamos play/pausa à outra pessoa quando foi um toque/tecla do utilizador.
+  // Pausas feitas pelo sistema (outra janela a tocar, chamada, notificação) não são propagadas.
+  let lastUserInputAt = 0;
+  ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(ev =>
+    document.addEventListener(ev, () => { lastUserInputAt = Date.now(); }, true));
+  const userInitiated = () => Date.now() - lastUserInputAt < 1500;
+
   function wireTransferSyncElement(el) {
     if (el.dataset.syncWired) return;
     el.dataset.syncWired = '1';
     el.addEventListener('play', () => {
-      if (!transferApplyingRemote) socketSend({ type: 'control', action: 'transfer-play', time: el.currentTime });
+      if (!transferApplyingRemote && userInitiated()) socketSend({ type: 'control', action: 'transfer-play', time: el.currentTime });
     });
     el.addEventListener('pause', () => {
-      if (!transferApplyingRemote) socketSend({ type: 'control', action: 'transfer-pause', time: el.currentTime });
+      if (!transferApplyingRemote && userInitiated()) socketSend({ type: 'control', action: 'transfer-pause', time: el.currentTime });
     });
   }
 
