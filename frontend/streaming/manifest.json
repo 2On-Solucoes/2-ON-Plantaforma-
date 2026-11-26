@@ -1,0 +1,17 @@
+{
+  "name": "2 ON Streaming",
+  "short_name": "2ON Stream",
+  "description": "Assiste ao mesmo vídeo em tempo real com outra pessoa.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#060d15",
+  "theme_color": "#060d15",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
