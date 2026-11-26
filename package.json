@@ -1,0 +1,13 @@
+{
+  "name": "2on",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "node backend/test/engine.test.js && node backend/test/games.test.js && node backend/test/timing.test.js",
+    "test:e2e": "node backend/test/e2e.test.js"
+  }
+}

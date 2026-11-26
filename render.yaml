@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: 2-on-plataforma
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FORCE_HTTPS
+        value: "1"
