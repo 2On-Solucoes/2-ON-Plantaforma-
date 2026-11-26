@@ -50,6 +50,7 @@ function sanitize(value, depth = 0) {
 
 function createStreaming({ log = console } = {}) {
   const rooms = new Map();   // código → { code, host, viewer, controlGranted, emptySince }
+  const dbg = (...a) => { try { (log.info || log.log).call(log, '[stream]', ...a); } catch {} };   // só códigos e tipos, nunca conteúdo
 
   const sweeper = setInterval(() => {
     const now = Date.now();
@@ -156,6 +157,7 @@ function createStreaming({ log = console } = {}) {
     };
     rooms.set(code, room);
     bind(conn, room, 'host');
+    dbg('sala criada', code);
     conn.send(Object.assign({ type: 'room-created' }, roomInfo(room)));
   }
 
@@ -172,6 +174,7 @@ function createStreaming({ log = console } = {}) {
     room.viewer = { playerId: conn.playerId, name, conn, grace: null };
     room.controlGranted = false;
     bind(conn, room, 'viewer');
+    dbg('convidado entrou', code);
     conn.send(Object.assign({ type: 'room-joined' }, roomInfo(room)));
     sendTo(room.host, presence(room));
     sendTo(room.host, { type: 'peer-joined' });
@@ -192,6 +195,7 @@ function createStreaming({ log = console } = {}) {
     if (seat.conn && !same) unbind(seat.conn);   // ligação antiga fica de parte
     seat.conn = conn;
     bind(conn, room, role);
+    dbg('rejoin', code, role);
     conn.send(Object.assign({ type: role === 'host' ? 'room-created' : 'room-joined' }, roomInfo(room, { rejoined: true })));
     if (!same) {
       const other = peerSeat(room, role);
@@ -215,7 +219,11 @@ function createStreaming({ log = console } = {}) {
     if (!room) return;
     const role = conn.streamRole;
     const peer = peerSeat(room, role);
-    const out = (msg) => { if (peer && peer.conn) peer.conn.send(msg); };
+    const out = (msg) => {
+      const ok = !!(peer && peer.conn);
+      if (m.type === 'offer' || m.type === 'answer' || m.type === 'ice-candidate' || m.type === 'control-granted') dbg(m.type, room.code, role + '→' + (role === 'host' ? 'viewer' : 'host'), ok ? 'entregue' : 'SEM DESTINO');
+      if (ok) peer.conn.send(msg);
+    };
     const bytes = v => { try { return JSON.stringify(v).length; } catch { return Infinity; } };
 
     switch (m.type) {
@@ -291,6 +299,7 @@ function createStreaming({ log = console } = {}) {
     const seat = seatOf(room, role);
     seat.conn = null;
     unbind(conn);
+    dbg('ligação caiu', room.code, role);
     sendTo(peerSeat(room, role), { type: 'peer-disconnected-temp' });
     clearTimeout(seat.grace);
     seat.grace = setTimeout(() => {
